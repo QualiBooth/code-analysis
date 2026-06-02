@@ -10,10 +10,6 @@ inputs:
     description: Your QualiBooth organization UUID (find it in Settings → Organization)
     required: true
 
-  api-token:
-    description: Your QualiBooth API token (generate in Settings → API Tokens)
-    required: true
-
   project-type:
     description: Type of project to scan — react, vue, or html
     required: false
@@ -32,7 +28,7 @@ inputs:
   api-url:
     description: QualiBooth API base URL (override for staging or self-hosted)
     required: false
-    default: https://api.qualibooth.com
+    default: https://pipelinein.dev.qualibooth.com
 
 outputs:
   issues-found:

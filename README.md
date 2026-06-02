@@ -15,7 +15,6 @@ Before adding the action to your workflow, add two secrets to your repository:
 | Secret Name | Where to find it |
 |---|---|
 | `QUALIBOOTH_ORG_UUID` | QualiBooth dashboard → Settings → Organization |
-| `QUALIBOOTH_API_TOKEN` | QualiBooth dashboard → Settings → API Tokens → Generate |
 
 ---
 
@@ -45,7 +44,6 @@ jobs:
         uses: qualibooth/QualiBooth-Action@v1
         with:
           org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-          api-token: ${{ secrets.QUALIBOOTH_API_TOKEN }}
 ```
 
 That's it. Results appear in your QualiBooth dashboard after each push.
@@ -57,11 +55,10 @@ That's it. Results appear in your QualiBooth dashboard after each push.
 | Input | Required | Default | Description |
 |---|---|---|---|
 | `org-uuid` | ✅ | — | Your QualiBooth organization UUID |
-| `api-token` | ✅ | — | Your QualiBooth API token |
 | `project-type` | — | `react` | Project type: `react`, `vue`, or `html` |
 | `scan-paths` | — | `src/` | Comma-separated paths to scan |
 | `fail-on-issues` | — | `false` | Set to `true` to fail the build when issues are found |
-| `api-url` | — | `https://api.qualibooth.com` | Override for staging or self-hosted deployments |
+| `api-url` | — | `https://pipelinein.dev.qualibooth.com` | Override for staging or self-hosted deployments |
 
 ## Outputs
 
@@ -105,7 +102,6 @@ Scans: `.html` `.htm` `.js`
 - uses: qualibooth/QualiBooth-Action@v1
   with:
     org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-    api-token: ${{ secrets.QUALIBOOTH_API_TOKEN }}
     project-type: vue
     scan-paths: "src/components, src/views, src/layouts"
 ```
@@ -116,7 +112,6 @@ Scans: `.html` `.htm` `.js`
 - uses: qualibooth/QualiBooth-Action@v1
   with:
     org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-    api-token: ${{ secrets.QUALIBOOTH_API_TOKEN }}
     fail-on-issues: true
 ```
 
@@ -127,7 +122,6 @@ Scans: `.html` `.htm` `.js`
   id: qualibooth
   with:
     org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-    api-token: ${{ secrets.QUALIBOOTH_API_TOKEN }}
 
 - name: Comment on PR
   if: steps.qualibooth.outputs.issues-found != '0'
@@ -140,8 +134,7 @@ Scans: `.html` `.htm` `.js`
 - uses: qualibooth/QualiBooth-Action@v1
   with:
     org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-    api-token: ${{ secrets.QUALIBOOTH_API_TOKEN }}
-    api-url: https://api.staging.qualibooth.com
+    api-url: https://pipelinein.staging.qualibooth.com
 ```
 
 ---
@@ -151,7 +144,7 @@ Scans: `.html` `.htm` `.js`
 1. `actions/checkout` checks out your repository to `GITHUB_WORKSPACE`
 2. The action runs ESLint with the appropriate accessibility plugin for your `project-type`
 3. Only accessibility rule violations are collected (rules prefixed `jsx-a11y/` or `vuejs-accessibility/`) — no other ESLint rules are applied or reported
-4. Results are POSTed to `/code-analysis/scan-results` with repo, branch, commit SHA, and the full issue list
+4. Results are POSTed to `/metrics-sca/vertices/in` with the org UUID in the `authorization` header and repo, branch, commit SHA, and the full issue list in the body
 5. Your QualiBooth dashboard shows the new scan run immediately
 
 ---
@@ -176,7 +169,7 @@ git push --follow-tags
 ## Troubleshooting
 
 **HTTP 401 — Unauthorized**
-Your `QUALIBOOTH_API_TOKEN` secret is missing or expired. Generate a new token in QualiBooth → Settings → API Tokens and update the secret.
+Your `QUALIBOOTH_ORG_UUID` secret is missing or incorrect. Copy it exactly from QualiBooth → Settings → Organization.
 
 **HTTP 422 — Unprocessable Entity**
 The `org-uuid` value is not a valid UUID. Copy it exactly from QualiBooth → Settings → Organization.

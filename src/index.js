@@ -9,11 +9,10 @@ const { postScanResults } = require('./api-client')
 async function run() {
   try {
     const orgUuid      = core.getInput('org-uuid', { required: true })
-    const apiToken     = core.getInput('api-token', { required: true })
     const projectType  = core.getInput('project-type') || 'react'
     const scanPathsRaw = core.getInput('scan-paths') || 'src/'
     const failOnIssues = core.getInput('fail-on-issues') === 'true'
-    const apiUrl       = core.getInput('api-url') || 'https://api.qualibooth.com'
+    const apiUrl       = core.getInput('api-url') || 'https://pipelinein.dev.qualibooth.com'
 
     // GITHUB_HEAD_REF is set on pull_request events (the source branch name)
     // GITHUB_REF_NAME is set on push events
@@ -44,7 +43,6 @@ async function run() {
     core.info('Posting results to QualiBooth API...')
     const response = await postScanResults({
       apiUrl,
-      apiToken,
       orgUuid,
       repo,
       branch,

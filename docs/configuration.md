@@ -12,14 +12,6 @@ Store it as a GitHub secret (`QUALIBOOTH_ORG_UUID`) and reference it via `${{ se
 
 ---
 
-### `api-token` (required)
-
-A QualiBooth API bearer token used to authenticate the POST request. Generate one in QualiBooth → Settings → API Tokens.
-
-Store it as a GitHub secret (`QUALIBOOTH_API_TOKEN`) — never hard-code it in your workflow file.
-
----
-
 ### `project-type` (default: `react`)
 
 Controls which ESLint plugin and parser are used for the scan.
@@ -68,15 +60,15 @@ Even with `fail-on-issues: true`, results are always posted to QualiBooth before
 
 ---
 
-### `api-url` (default: `https://api.qualibooth.com`)
+### `api-url` (default: `https://pipelinein.dev.qualibooth.com`)
 
 The base URL for the QualiBooth API. Override this for:
 
-- **Staging** environments: `https://api.staging.qualibooth.com`
+- **Staging** environments: `https://pipelinein.staging.qualibooth.com`
 - **Self-hosted** deployments: `https://qualibooth.your-company.com`
 - **Local development**: `http://localhost:3000`
 
-The action appends `/code-analysis/scan-results` to whatever URL you provide.
+The action appends `/metrics-sca/vertices/in` to whatever URL you provide.
 
 ---
 
@@ -153,7 +145,7 @@ All other ESLint messages (syntax errors, style rules, etc.) are silently droppe
 
 ## API Payload
 
-The action POSTs the following JSON to `{api-url}/code-analysis/scan-results`:
+The action POSTs the following JSON to `{api-url}/metrics-sca/vertices/in` with the org UUID sent as the `authorization` header:
 
 ```json
 {

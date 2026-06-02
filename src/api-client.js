@@ -4,8 +4,8 @@ const https = require('https')
 const http = require('http')
 const { URL } = require('url')
 
-async function postScanResults({ apiUrl, apiToken, orgUuid, repo, branch, commitSha, issues }) {
-  const url = new URL('/code-analysis/scan-results', apiUrl)
+async function postScanResults({ apiUrl, orgUuid, repo, branch, commitSha, issues }) {
+  const url = new URL('/metrics-sca/vertices/in', apiUrl)
   const body = JSON.stringify({ orgUuid, repo, branch, commitSha, issues })
 
   return new Promise((resolve, reject) => {
@@ -20,7 +20,7 @@ async function postScanResults({ apiUrl, apiToken, orgUuid, repo, branch, commit
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
-          'Authorization': `Bearer ${apiToken}`,
+          'authorization': orgUuid,
           'User-Agent': 'QualiBooth-Action/1.0',
         },
       },
