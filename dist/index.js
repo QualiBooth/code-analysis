@@ -192545,8 +192545,8 @@ const https = __webpack_require__(65692)
 const http = __webpack_require__(58611)
 const { URL } = __webpack_require__(87016)
 
-async function postScanResults({ apiUrl, apiToken, orgUuid, repo, branch, commitSha, issues }) {
-  const url = new URL('/code-analysis/scan-results', apiUrl)
+async function postScanResults({ apiUrl, orgUuid, repo, branch, commitSha, issues }) {
+  const url = new URL('/metrics-sca/vertices/in', apiUrl)
   const body = JSON.stringify({ orgUuid, repo, branch, commitSha, issues })
 
   return new Promise((resolve, reject) => {
@@ -192561,7 +192561,7 @@ async function postScanResults({ apiUrl, apiToken, orgUuid, repo, branch, commit
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(body),
-          'Authorization': `Bearer ${apiToken}`,
+          'authorization': orgUuid,
           'User-Agent': 'QualiBooth-Action/1.0',
         },
       },
@@ -192821,11 +192821,10 @@ const { postScanResults } = __webpack_require__(17045)
 async function run() {
   try {
     const orgUuid      = core.getInput('org-uuid', { required: true })
-    const apiToken     = core.getInput('api-token', { required: true })
     const projectType  = core.getInput('project-type') || 'react'
     const scanPathsRaw = core.getInput('scan-paths') || 'src/'
     const failOnIssues = core.getInput('fail-on-issues') === 'true'
-    const apiUrl       = core.getInput('api-url') || 'https://api.qualibooth.com'
+    const apiUrl       = core.getInput('api-url') || 'https://pipelinein.dev.qualibooth.com'
 
     // GITHUB_HEAD_REF is set on pull_request events (the source branch name)
     // GITHUB_REF_NAME is set on push events
@@ -192856,7 +192855,6 @@ async function run() {
     core.info('Posting results to QualiBooth API...')
     const response = await postScanResults({
       apiUrl,
-      apiToken,
       orgUuid,
       repo,
       branch,
