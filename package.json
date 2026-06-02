@@ -1,6 +1,6 @@
 {
   "name": "qualibooth-action",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "QualiBooth GitHub Action — ESLint accessibility analysis for React, Vue, and HTML projects",
   "private": true,
   "main": "src/index.js",
