@@ -192768,7 +192768,7 @@ async function runEslint(projectType, scanPaths, repoRoot) {
 
   const eslint = new ESLint({
     cwd: repoRoot,
-    overrideConfigFile: false,
+    overrideConfigFile: true,
     overrideConfig,
     errorOnUnmatchedPattern: false,
   })
