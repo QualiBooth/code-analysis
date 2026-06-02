@@ -1,0 +1,9 @@
+node_modules/
+# dist/ is committed on release tags — do not gitignore on release branches
+# Uncomment during development if you want to keep dist/ out of feature branches:
+# dist/
+*.log
+.env
+.env.*
+coverage/
+.DS_Store

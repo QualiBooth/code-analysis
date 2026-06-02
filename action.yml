@@ -1,0 +1,43 @@
+name: QualiBooth Accessibility Code Analysis
+description: Run ESLint accessibility analysis on your codebase and report results to QualiBooth
+
+branding:
+  icon: shield
+  color: blue
+
+inputs:
+  org-uuid:
+    description: Your QualiBooth organization UUID (find it in Settings → Organization)
+    required: true
+
+  api-token:
+    description: Your QualiBooth API token (generate in Settings → API Tokens)
+    required: true
+
+  project-type:
+    description: Type of project to scan — react, vue, or html
+    required: false
+    default: react
+
+  scan-paths:
+    description: Comma-separated list of paths to scan (relative to repo root)
+    required: false
+    default: src/
+
+  fail-on-issues:
+    description: Exit with code 1 if accessibility issues are found
+    required: false
+    default: "false"
+
+  api-url:
+    description: QualiBooth API base URL (override for staging or self-hosted)
+    required: false
+    default: https://api.qualibooth.com
+
+outputs:
+  issues-found:
+    description: Number of accessibility issues found in this scan
+
+runs:
+  using: node20
+  main: dist/index.js
