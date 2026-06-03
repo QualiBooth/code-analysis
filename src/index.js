@@ -12,7 +12,7 @@ async function run() {
     const projectType  = core.getInput('project-type') || 'react'
     const scanPathsRaw = core.getInput('scan-paths') || 'src/'
     const failOnIssues = core.getInput('fail-on-issues') === 'true'
-    const apiUrl       = core.getInput('api-url') || 'https://pipelinein.dev.qualibooth.com'
+    const apiUrl       = core.getInput('api-url') || 'https://pipelinein.qualibooth.com'
 
     // GITHUB_HEAD_REF is set on pull_request events (the source branch name)
     // GITHUB_REF_NAME is set on push events

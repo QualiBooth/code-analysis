@@ -60,7 +60,7 @@ Even with `fail-on-issues: true`, results are always posted to QualiBooth before
 
 ---
 
-### `api-url` (default: `https://pipelinein.dev.qualibooth.com`)
+### `api-url` (default: `https://pipelinein.qualibooth.com`)
 
 The base URL for the QualiBooth API. Override this for:
 

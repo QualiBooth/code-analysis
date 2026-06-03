@@ -28,7 +28,7 @@ inputs:
   api-url:
     description: QualiBooth API base URL (override for staging or self-hosted)
     required: false
-    default: https://pipelinein.dev.qualibooth.com
+    default: https://pipelinein.qualibooth.com
 
 outputs:
   issues-found:

@@ -58,7 +58,7 @@ That's it. Results appear in your QualiBooth dashboard after each push.
 | `project-type` | — | `react` | Project type: `react`, `vue`, or `html` |
 | `scan-paths` | — | `src/` | Comma-separated paths to scan |
 | `fail-on-issues` | — | `false` | Set to `true` to fail the build when issues are found |
-| `api-url` | — | `https://pipelinein.dev.qualibooth.com` | Override for staging or self-hosted deployments |
+| `api-url` | — | `https://pipelinein.qualibooth.com` | Override for staging or self-hosted deployments |
 
 ## Outputs
 
