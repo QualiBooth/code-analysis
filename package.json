@@ -24,5 +24,8 @@
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38.3"
+  },
+  "overrides": {
+    "vscode-css-languageservice": "file:./src/stubs/vscode-css-languageservice"
   }
 }
