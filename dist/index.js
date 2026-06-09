@@ -158460,10 +158460,10 @@ const replaceCaret = (comp, options) => {
       if (M === '0') {
         if (m === '0') {
           ret = `>=${M}.${m}.${p
-          }${z} <${M}.${m}.${+p + 1}-0`
+          } <${M}.${m}.${+p + 1}-0`
         } else {
           ret = `>=${M}.${m}.${p
-          }${z} <${M}.${+m + 1}.0-0`
+          } <${M}.${+m + 1}.0-0`
         }
       } else {
         ret = `>=${M}.${m}.${p
@@ -158665,6 +158665,22 @@ const { safeRe: re, t } = __webpack_require__(95471)
 
 const parseOptions = __webpack_require__(70356)
 const { compareIdentifiers } = __webpack_require__(73348)
+
+const isPrereleaseIdentifier = (prerelease, identifier) => {
+  const identifiers = identifier.split('.')
+  if (identifiers.length > prerelease.length) {
+    return false
+  }
+
+  for (let i = 0; i < identifiers.length; i++) {
+    if (compareIdentifiers(prerelease[i], identifiers[i]) !== 0) {
+      return false
+    }
+  }
+
+  return true
+}
+
 class SemVer {
   constructor (version, options) {
     options = parseOptions(options)
@@ -158968,8 +158984,9 @@ class SemVer {
           if (identifierBase === false) {
             prerelease = [identifier]
           }
-          if (compareIdentifiers(this.prerelease[0], identifier) === 0) {
-            if (isNaN(this.prerelease[1])) {
+          if (isPrereleaseIdentifier(this.prerelease, identifier)) {
+            const prereleaseBase = this.prerelease[identifier.split('.').length]
+            if (isNaN(prereleaseBase)) {
               this.prerelease = prerelease
             }
           } else {
@@ -161130,7 +161147,10 @@ module.exports = function getSideChannel() {
 	var channel = {
 		assert: function (key) {
 			if (!channel.has(key)) {
-				throw new $TypeError('Side channel does not contain ' + inspect(key));
+				var keyDesc = key && Object(key) === key
+					? 'the given object key'
+					: inspect(key);
+				throw new $TypeError('Side channel does not contain ' + keyDesc);
 			}
 		},
 		'delete': function (key) {
@@ -161150,7 +161170,7 @@ module.exports = function getSideChannel() {
 			$channelData.set(key, value);
 		}
 	};
-	// @ts-expect-error TODO: figure out why this is erroring
+
 	return channel;
 };
 
@@ -161274,23 +161294,32 @@ module.exports = function shimIncludes() {
 
 
 var RequireObjectCoercible = __webpack_require__(19601);
-var ToString = __webpack_require__(88636);
+var ToString = __webpack_require__(35038);
 var callBound = __webpack_require__(23105);
+var safeRegexTester = __webpack_require__(93470);
+
 var $replace = callBound('String.prototype.replace');
+var $charAt = callBound('String.prototype.charAt');
+var $slice = callBound('String.prototype.slice');
 
 var mvsIsWS = (/^\s$/).test('\u180E');
 /* eslint-disable no-control-regex */
 var leftWhitespace = mvsIsWS
 	? /^[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/
 	: /^[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+/;
-var rightWhitespace = mvsIsWS
-	? /[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+$/
-	: /[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]+$/;
+var isWhitespace = safeRegexTester(mvsIsWS
+	? /[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]$/
+	: /[\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u2000\u2001\u2002\u2003\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF]$/);
 /* eslint-enable no-control-regex */
 
 module.exports = function trim() {
-	var S = ToString(RequireObjectCoercible(this));
-	return $replace($replace(S, leftWhitespace, ''), rightWhitespace, '');
+	var S = $replace(ToString(RequireObjectCoercible(this)), leftWhitespace, '');
+	// scan back for the trailing whitespace boundary; a `$`-anchored regexp is quadratic on large internal whitespace runs
+	var end = S.length;
+	while (end > 0 && isWhitespace($charAt(S, end - 1))) {
+		end -= 1;
+	}
+	return $slice(S, 0, end);
 };
 
 
@@ -197964,6 +197993,29 @@ module.exports = function ToPrimitive(input) {
 		return toPrimitive(input, arguments[1]);
 	}
 	return toPrimitive(input);
+};
+
+
+/***/ }),
+
+/***/ 35038:
+/***/ ((module, __unused_webpack_exports, __webpack_require__) => {
+
+"use strict";
+
+
+var GetIntrinsic = __webpack_require__(60470);
+
+var $String = GetIntrinsic('%String%');
+var $TypeError = __webpack_require__(73314);
+
+// https://262.ecma-international.org/6.0/#sec-tostring
+
+module.exports = function ToString(argument) {
+	if (typeof argument === 'symbol') {
+		throw new $TypeError('Cannot convert a Symbol value to a string');
+	}
+	return $String(argument);
 };
 
 
