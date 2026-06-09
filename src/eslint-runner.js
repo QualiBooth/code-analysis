@@ -4,7 +4,7 @@ const path = require('path')
 const { ESLint } = require('eslint')
 const { getConfigForProjectType } = require('./eslint-configs')
 
-const A11Y_RULE_PREFIXES = ['jsx-a11y/', 'vuejs-accessibility/']
+const A11Y_RULE_PREFIXES = ['jsx-a11y/', 'vuejs-accessibility/', '@html-eslint/']
 
 function isA11yRule(ruleId) {
   if (!ruleId) return false
