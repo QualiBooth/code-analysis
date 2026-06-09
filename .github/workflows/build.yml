@@ -2,7 +2,7 @@ name: Build dist
 
 on:
   push:
-    branches: [main]
+    branches: ['**']
     paths:
       - 'src/**'
       - 'package.json'

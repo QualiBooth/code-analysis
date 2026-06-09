@@ -192615,9 +192615,6 @@ function getHtmlConfig() {
         'jsx-a11y': jsxA11y,
       },
       files: ['**/*.{html,htm}'],
-      processor: htmlPlugin.processors
-        ? htmlPlugin.processors['.html'] || htmlPlugin.processors['html']
-        : undefined,
       rules: jsxA11y.flatConfigs.recommended.rules,
       languageOptions: {
         ecmaVersion: 2022,
