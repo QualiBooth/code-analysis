@@ -35785,7 +35785,7 @@ module.exports = function shimFlatMap() {
 /***/ (function(module, __unused_webpack_exports, __webpack_require__) {
 
 /* module decorator */ module = __webpack_require__.nmd(module);
-/*! axe v4.12.0
+/*! axe v4.12.1
  * Copyright (c) 2015 - 2026 Deque Systems, Inc.
  *
  * Your use of this Source Code Form is subject to the terms of the Mozilla Public
@@ -35809,7 +35809,7 @@ module.exports = function shimFlatMap() {
     }, _typeof(o);
   }
   var axe = axe || {};
-  axe.version = '4.12.0';
+  axe.version = '4.12.1';
   if (typeof define === 'function' && define.amd) {
     define('axe-core', [], function() {
       return axe;
@@ -42676,12 +42676,18 @@ module.exports = function shimFlatMap() {
     Object.freeze(constants.resultGroupMap);
     Object.freeze(constants);
     var constants_default = constants;
+    var logger;
     function log() {
-      if ((typeof console === 'undefined' ? 'undefined' : _typeof(console)) === 'object' && console.log) {
-        Function.prototype.apply.call(console.log, console, arguments);
+      if (logger) {
+        logger.apply(void 0, arguments);
+      } else if ((typeof console === 'undefined' ? 'undefined' : _typeof(console)) === 'object' && console.log) {
+        var _console;
+        (_console = console).log.apply(_console, arguments);
       }
     }
-    var log_default = log;
+    function setLogger(fn) {
+      logger = fn;
+    }
     var whitespaceRegex = /[\t\r\n\f]/g;
     var AbstractVirtualNode = function() {
       function AbstractVirtualNode() {
@@ -47493,7 +47499,7 @@ module.exports = function shimFlatMap() {
         err2 = e;
         setTimeout(function() {
           if (err2 !== void 0 && err2 !== null) {
-            log_default('Uncaught error (of queue)', err2);
+            log('Uncaught error (of queue)', err2);
           }
         }, 1);
       };
@@ -47980,7 +47986,7 @@ module.exports = function shimFlatMap() {
       var win = node.contentWindow;
       var pingWaitTime = (_parameters$options$p = (_parameters$options = parameters.options) === null || _parameters$options === void 0 ? void 0 : _parameters$options.pingWaitTime) !== null && _parameters$options$p !== void 0 ? _parameters$options$p : 500;
       if (!win) {
-        log_default('Frame does not have a content window', node);
+        log('Frame does not have a content window', node);
         resolve(null);
         return;
       }
@@ -52663,7 +52669,7 @@ module.exports = function shimFlatMap() {
         return accName || step(virtualNode, context);
       }, '');
       if (context.debug) {
-        log_default(valueString || '{empty-value}', actualNode, context);
+        log(valueString || '{empty-value}', actualNode, context);
       }
       return valueString;
     }
@@ -55513,7 +55519,7 @@ module.exports = function shimFlatMap() {
           axeStartTime = now();
         },
         _log: function _log(message) {
-          log_default(message);
+          log(message);
         }
       };
     }();
@@ -56567,12 +56573,12 @@ module.exports = function shimFlatMap() {
     }
     function _loadElementInternals() {
       _loadElementInternals = _asyncToGenerator(_regenerator().m(function _callee2() {
-        var logger, promiseValue, internalsMap, _i43, _internalsMap$_i, internals, ancestry, node, vNode, _i44, _Object$entries, _Object$entries$_i, _key12, val, type2, value, _args2 = arguments;
+        var logger2, promiseValue, internalsMap, _i43, _internalsMap$_i, internals, ancestry, node, vNode, _i44, _Object$entries, _Object$entries$_i, _key12, val, type2, value, _args2 = arguments;
         return _regenerator().w(function(_context3) {
           while (1) {
             switch (_context3.n) {
              case 0:
-              logger = _args2.length > 0 && _args2[0] !== undefined ? _args2[0] : log_default;
+              logger2 = _args2.length > 0 && _args2[0] !== undefined ? _args2[0] : log;
               if (getElementInternals2) {
                 _context3.n = 1;
                 break;
@@ -56591,7 +56597,7 @@ module.exports = function shimFlatMap() {
                 _context3.n = 3;
                 break;
               }
-              logger('externalAPIs.getElementInternals() did not return an array');
+              logger2('externalAPIs.getElementInternals() did not return an array');
               return _context3.a(2);
 
              case 3:
@@ -56606,7 +56612,7 @@ module.exports = function shimFlatMap() {
                 _context3.n = 5;
                 break;
               }
-              logger('externalAPIs.getElementInternals()['.concat(_i43, '] is not an object'));
+              logger2('externalAPIs.getElementInternals()['.concat(_i43, '] is not an object'));
               return _context3.a(3, 13);
 
              case 5:
@@ -56616,7 +56622,7 @@ module.exports = function shimFlatMap() {
                 _context3.n = 6;
                 break;
               }
-              logger('externalAPIs.getElementInternals()['.concat(_i43, '].internals is not an object'));
+              logger2('externalAPIs.getElementInternals()['.concat(_i43, '].internals is not an object'));
               return _context3.a(3, 13);
 
              case 6:
@@ -56624,7 +56630,7 @@ module.exports = function shimFlatMap() {
                 _context3.n = 7;
                 break;
               }
-              logger('externalAPIs.getElementInternals()['.concat(_i43, '].ancestry is not a string or an array of strings'));
+              logger2('externalAPIs.getElementInternals()['.concat(_i43, '].ancestry is not a string or an array of strings'));
               return _context3.a(3, 13);
 
              case 7:
@@ -56634,7 +56640,7 @@ module.exports = function shimFlatMap() {
                 _context3.n = 8;
                 break;
               }
-              logger('Unable to locate node using selector '.concat(ancestry, ' from externalAPIs.getElementInternals()[').concat(_i43, ']'));
+              logger2('Unable to locate node using selector '.concat(ancestry, ' from externalAPIs.getElementInternals()[').concat(_i43, ']'));
               return _context3.a(3, 13);
 
              case 8:
@@ -56656,10 +56662,10 @@ module.exports = function shimFlatMap() {
              case 10:
               type2 = val.type, value = val.value;
               if (!type2) {
-                logger('externalAPIs.getElementInternals()['.concat(_i43, '].internals.').concat(_key12, ' is an object but has no "type" property'));
+                logger2('externalAPIs.getElementInternals()['.concat(_i43, '].internals.').concat(_key12, ' is an object but has no "type" property'));
               }
               if (!value) {
-                logger('externalAPIs.getElementInternals()['.concat(_i43, '].internals.').concat(_key12, ' is an object but has no "value" property'));
+                logger2('externalAPIs.getElementInternals()['.concat(_i43, '].internals.').concat(_key12, ' is an object but has no "value" property'));
               }
               if (type2 === 'HTMLElement') {
                 setHTMLElement(internals, _key12, value);
@@ -56737,12 +56743,13 @@ module.exports = function shimFlatMap() {
     }
     function getRules(tags) {
       tags = tags || [];
-      var matchingRules = !tags.length ? axe._audit.rules : axe._audit.rules.filter(function(item) {
+      var _axe$_audit = axe._audit, rules = _axe$_audit.rules, data = _axe$_audit.data, tagExclude = _axe$_audit.tagExclude;
+      var matchingRules = !tags.length ? rules : rules.filter(function(item) {
         return !!tags.filter(function(tag) {
           return item.tags.indexOf(tag) !== -1;
         }).length;
       });
-      var ruleData = axe._audit.data.rules || {};
+      var ruleData = data.rules || {};
       return matchingRules.map(function(matchingRule) {
         var rd = ruleData[matchingRule.id] || {};
         return {
@@ -56752,7 +56759,9 @@ module.exports = function shimFlatMap() {
           helpUrl: rd.helpUrl,
           tags: matchingRule.tags,
           actIds: matchingRule.actIds,
-          enabled: matchingRule.enabled
+          enabled: matchingRule.enabled && !matchingRule.tags.some(function(tag) {
+            return tagExclude.includes(tag);
+          })
         };
       });
     }
@@ -64657,7 +64666,7 @@ module.exports = function shimFlatMap() {
       this._markChecksEnd = 'mark_runchecks_end_' + this.id;
     };
     Rule.prototype._logGatherPerformance = function _logGatherPerformance(nodes) {
-      log_default('gather for '.concat(this.id, ' (').concat(nodes.length, ' nodes): ').concat(performance_timer_default.timeElapsed(), 'ms'));
+      log('gather for '.concat(this.id, ' (').concat(nodes.length, ' nodes): ').concat(performance_timer_default.timeElapsed(), 'ms'));
       performance_timer_default.mark(this._markChecksStart);
     };
     Rule.prototype._logRulePerformance = function _logRulePerformance() {
@@ -65396,7 +65405,7 @@ module.exports = function shimFlatMap() {
             resolve(results, teardown_default);
           } catch (e) {
             teardown_default();
-            log_default(e);
+            log(e);
           }
         } catch (e) {
           teardown_default();
@@ -65536,7 +65545,7 @@ module.exports = function shimFlatMap() {
       });
     }
     function normalizeRunParams(_ref147) {
-      var _ref149, _options$reporter, _axe$_audit;
+      var _ref149, _options$reporter, _axe$_audit2;
       var _ref148 = _slicedToArray(_ref147, 3), context = _ref148[0], options = _ref148[1], callback = _ref148[2];
       var typeErr = new TypeError('axe.run arguments are invalid');
       if (!_isContextSpec(context)) {
@@ -65558,7 +65567,7 @@ module.exports = function shimFlatMap() {
         throw typeErr;
       }
       options = clone2(options);
-      options.reporter = (_ref149 = (_options$reporter = options.reporter) !== null && _options$reporter !== void 0 ? _options$reporter : (_axe$_audit = axe._audit) === null || _axe$_audit === void 0 ? void 0 : _axe$_audit.reporter) !== null && _ref149 !== void 0 ? _ref149 : 'v1';
+      options.reporter = (_ref149 = (_options$reporter = options.reporter) !== null && _options$reporter !== void 0 ? _options$reporter : (_axe$_audit2 = axe._audit) === null || _axe$_audit2 === void 0 ? void 0 : _axe$_audit2.reporter) !== null && _ref149 !== void 0 ? _ref149 : 'v1';
       return {
         context: context,
         options: options,
@@ -65707,14 +65716,14 @@ module.exports = function shimFlatMap() {
       });
     }
     function finishRun(partialResults) {
-      var _ref152, _options$reporter2, _axe$_audit2;
+      var _ref152, _options$reporter2, _axe$_audit3;
       var options = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : {};
       options = clone2(options);
       var _ref151 = partialResults.find(function(r) {
         return r.environmentData;
       }) || {}, environmentData = _ref151.environmentData;
       _normalizeRunOptions(options);
-      options.reporter = (_ref152 = (_options$reporter2 = options.reporter) !== null && _options$reporter2 !== void 0 ? _options$reporter2 : (_axe$_audit2 = axe._audit) === null || _axe$_audit2 === void 0 ? void 0 : _axe$_audit2.reporter) !== null && _ref152 !== void 0 ? _ref152 : 'v1';
+      options.reporter = (_ref152 = (_options$reporter2 = options.reporter) !== null && _options$reporter2 !== void 0 ? _options$reporter2 : (_axe$_audit3 = axe._audit) === null || _axe$_audit3 === void 0 ? void 0 : _axe$_audit3.reporter) !== null && _ref152 !== void 0 ? _ref152 : 'v1';
       setFrameSpec(partialResults);
       var results = merge_results_default(partialResults);
       results = axe._audit.after(results, options);
@@ -65908,7 +65917,8 @@ module.exports = function shimFlatMap() {
     var exposed_for_testing_default = _thisWillBeDeletedDoNotUse;
     axe._thisWillBeDeletedDoNotUse = exposed_for_testing_default;
     axe.constants = constants_default;
-    axe.log = log_default;
+    axe.log = log;
+    axe._setLogger = setLogger;
     axe.AbstractVirtualNode = abstract_virtual_node_default;
     axe.SerialVirtualNode = serial_virtual_node_default;
     axe.VirtualNode = virtual_node_default;
@@ -159667,6 +159677,11 @@ const parseComparator = (comp, options) => {
 
 const isX = id => !id || id.toLowerCase() === 'x' || id === '*'
 
+const invalidXRangeOrder = (M, m, p) => (
+  (isX(M) && !isX(m)) ||
+  (isX(m) && p && !isX(p))
+)
+
 // ~, ~> --> * (any, kinda silly)
 // ~2, ~2.x, ~2.x.x, ~>2, ~>2.x ~>2.x.x --> >=2.0.0 <3.0.0-0
 // ~2.0, ~2.0.x, ~>2.0, ~>2.0.x --> >=2.0.0 <2.1.0-0
@@ -159792,6 +159807,10 @@ const replaceXRange = (comp, options) => {
   const r = options.loose ? re[t.XRANGELOOSE] : re[t.XRANGE]
   return comp.replace(r, (ret, gtlt, M, m, p, pr) => {
     debug('xRange', comp, ret, gtlt, M, m, p, pr)
+    if (invalidXRangeOrder(M, m, p)) {
+      return comp
+    }
+
     const xM = isX(M)
     const xm = xM || isX(m)
     const xp = xm || isX(p)
