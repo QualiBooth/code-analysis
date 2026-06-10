@@ -1,0 +1,6 @@
+{
+  "name": "vscode-css-languageservice",
+  "version": "0.0.1",
+  "description": "Stub replacing vscode-css-languageservice so ncc can bundle @html-eslint without UMD relative-require failures",
+  "main": "index.js"
+}
