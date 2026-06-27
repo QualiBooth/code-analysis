@@ -166243,13 +166243,12 @@ const path = __webpack_require__(16928)
 const { runEslint } = __webpack_require__(57259)
 const { postScanResults } = __webpack_require__(17045)
 
-function getInput(name) {
-  const envKey = 'INPUT_' + name.toUpperCase().replace(/-/g, '_')
-  return process.env[envKey] || ''
+function getEnv(name) {
+  return process.env['QUALIBOOTH_' + name] || ''
 }
 
 function setOutput(name, value) {
-  const outputPath = process.env.GITHUB_OUTPUT
+  const outputPath = process.env.QUALIBOOTH_OUTPUT
   if (outputPath) {
     fs.appendFileSync(outputPath, `${name}=${value}\n`)
   } else {
@@ -166259,20 +166258,20 @@ function setOutput(name, value) {
 
 async function run() {
   try {
-    const orgUuid      = getInput('org-uuid') || process.env.QUALIBOOTH_ORG_UUID
-    if (!orgUuid) throw new Error('INPUT_ORG_UUID is required (set QUALIBOOTH_ORG_UUID for non-GitHub CIs)')
+    const orgUuid      = getEnv('ORG_UUID')
+    if (!orgUuid) throw new Error('QUALIBOOTH_ORG_UUID is required')
 
-    const projectType  = getInput('project-type') || 'react'
-    const scanPathsRaw = getInput('scan-paths') || 'src/'
-    const failOnIssues = getInput('fail-on-issues') === 'true'
-    const apiUrl       = getInput('api-url') || 'https://pipelinein.qualibooth.com'
+    const projectType  = getEnv('PROJECT_TYPE') || 'react'
+    const scanPathsRaw = getEnv('SCAN_PATHS') || 'src/'
+    const failOnIssues = getEnv('FAIL_ON_ISSUES') === 'true'
+    const apiUrl       = getEnv('API_URL') || 'https://pipelinein.qualibooth.com'
 
-    const rawRepo   = process.env.GITHUB_REPOSITORY || ''
+    const rawRepo   = getEnv('REPO') || ''
     const repo      = rawRepo.split('/')[1] || rawRepo
-    const branch    = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || ''
-    const fullSha   = process.env.GITHUB_SHA || ''
+    const branch    = getEnv('PR_HEAD') || getEnv('BRANCH') || ''
+    const fullSha   = getEnv('SHA') || ''
     const commitSha = fullSha.slice(0, 7)
-    const repoRoot  = process.env.GITHUB_WORKSPACE || path.resolve('.')
+    const repoRoot  = getEnv('WORKSPACE') || path.resolve('.')
 
     console.log(`QualiBooth: project-type=${projectType}`)
     console.log(`Repo: ${repo} | Branch: ${branch} | Commit: ${commitSha}`)
@@ -166287,7 +166286,7 @@ async function run() {
     const issues = await runEslint(projectType, scanPaths, repoRoot)
     console.log(`Found ${issues.length} accessibility issue(s)`)
 
-    setOutput('issues-found', String(issues.length))
+    setOutput('ISSUES_FOUND', String(issues.length))
 
     console.log('Posting results to QualiBooth API...')
     const response = await postScanResults({
@@ -166302,13 +166301,13 @@ async function run() {
 
     if (failOnIssues && issues.length > 0) {
       console.error(
-        `Found ${issues.length} accessibility issue(s). Set fail-on-issues: false to allow the build to pass.`
+        `Found ${issues.length} accessibility issue(s). Set QUALIBOOTH_FAIL_ON_ISSUES=false to allow the build to pass.`
       )
       process.exit(1)
     }
 
   } catch (error) {
-    console.error(`QualiBooth Action failed: ${error.message}`)
+    console.error(`QualiBooth failed: ${error.message}`)
     process.exit(1)
   }
 }

@@ -1,6 +1,6 @@
 # QualiBooth Accessibility Code Analysis
 
-A GitHub Action that scans your codebase for accessibility issues using ESLint and reports results to your [QualiBooth](https://qualibooth.com) dashboard.
+A cross-platform Docker image that scans your codebase for accessibility issues using ESLint and reports results to your [QualiBooth](https://qualibooth.com) dashboard. Works with **GitHub Actions**, **GitLab CI**, **Jenkins**, and any CI that supports Docker.
 
 Supports **React**, **Vue 3**, and **HTML** projects.
 
@@ -8,9 +8,7 @@ Supports **React**, **Vue 3**, and **HTML** projects.
 
 ## Prerequisites
 
-Before adding the action to your workflow, add two secrets to your repository:
-
-**Settings → Secrets and variables → Actions → New repository secret**
+Add a secret/variable to your CI system:
 
 | Secret Name | Where to find it |
 |---|---|
@@ -18,9 +16,9 @@ Before adding the action to your workflow, add two secrets to your repository:
 
 ---
 
-## Quick Start
+## Quick Start — GitHub Actions
 
-Create `.github/workflows/qualibooth.yml` in your repository:
+Create `.github/workflows/qualibooth.yml`:
 
 ```yaml
 name: QualiBooth Code Analysis
@@ -37,40 +35,192 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
       - name: Run QualiBooth Code Analysis
-        uses: qualibooth/QualiBooth-Action@v1
-        with:
-          org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
+        uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+        env:
+          QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
+          QUALIBOOTH_REPO: ${{ github.repository }}
+          QUALIBOOTH_SHA: ${{ github.sha }}
+          QUALIBOOTH_BRANCH: ${{ github.ref_name }}
 ```
 
-That's it. Results appear in your QualiBooth dashboard after each push.
+Results appear in your QualiBooth dashboard after each push.
 
 ---
 
-## Inputs
+## Docker Image
 
-| Input | Required | Default | Description |
+Published to GHCR as a portable image:
+
+```bash
+ghcr.io/qualibooth/qualibooth-action:v1.0.3
+```
+
+### GitHub Actions — `docker run` (Full Control)
+
+```yaml
+- name: Run QualiBooth Scan via Docker
+  run: |
+    docker run --rm \
+      -v "${{ github.workspace }}:/workspace" \
+      -e QUALIBOOTH_ORG_UUID="${{ secrets.QUALIBOOTH_ORG_UUID }}" \
+      -e QUALIBOOTH_REPO="${{ github.repository }}" \
+      -e QUALIBOOTH_SHA="${{ github.sha }}" \
+      -e QUALIBOOTH_BRANCH="${{ github.ref_name }}" \
+      -e QUALIBOOTH_PROJECT_TYPE=react \
+      ghcr.io/qualibooth/qualibooth-action:v1.0.3
+```
+
+### GitLab CI — Native Image
+
+```yaml
+qualibooth-scan:
+  image: ghcr.io/qualibooth/qualibooth-action:v1.0.3
+  variables:
+    QUALIBOOTH_ORG_UUID: $QUALIBOOTH_ORG_UUID
+    QUALIBOOTH_REPO: "$CI_PROJECT_PATH"
+    QUALIBOOTH_SHA: "$CI_COMMIT_SHA"
+    QUALIBOOTH_BRANCH: "$CI_COMMIT_BRANCH"
+```
+
+### GitLab CI — With `docker run`
+
+```yaml
+qualibooth-scan:
+  image: docker:24-dind
+  services:
+    - docker:24-dind
+
+  variables:
+    DOCKER_HOST: tcp://docker:2376
+  script:
+    - |
+      docker run --rm \
+        -v "$CI_PROJECT_DIR":/workspace \
+        -e QUALIBOOTH_ORG_UUID="$QUALIBOOTH_ORG_UUID" \
+        -e QUALIBOOTH_REPO="$CI_PROJECT_PATH" \
+        -e QUALIBOOTH_SHA="$CI_COMMIT_SHA" \
+        -e QUALIBOOTH_BRANCH="$CI_COMMIT_BRANCH" \
+        ghcr.io/qualibooth/qualibooth-action:v1.0.3
+```
+
+### Jenkins (Jenkinsfile)
+
+```groovy
+pipeline {
+    agent none
+    stages {
+        stage('Accessibility Scan') {
+            steps {
+                script {
+                    def image = 'ghcr.io/qualibooth/qualibooth-action:v1.0.3'
+                    sh """
+                      docker run --rm \\
+                        -v \${WORKSPACE}:/workspace \\
+                        -e QUALIBOOTH_ORG_UUID=\${env.QUALIBOOTH_ORG_UUID} \\
+                        -e QUALIBOOTH_REPO=\${env.GIT_URL.tokenize('/')[-2..-1].join('/')} \\
+                        -e QUALIBOOTH_SHA=\${env.GIT_COMMIT} \\
+                        -e QUALIBOOTH_BRANCH=master \\
+                        ${image}
+                    """
+                }
+            }
+        }
+    }
+}
+```
+
+---
+
+## Environment Variables
+
+All configuration is passed via environment variables prefixed with `QUALIBOOTH_`.
+
+| Variable | Required | Default | Description |
 |---|---|---|---|
-| `org-uuid` | ✅ | — | Your QualiBooth organization UUID |
-| `project-type` | — | `react` | Project type: `react`, `vue`, or `html` |
-| `scan-paths` | — | `src/` | Comma-separated paths to scan |
-| `fail-on-issues` | — | `false` | Set to `true` to fail the build when issues are found |
-| `api-url` | — | `https://pipelinein.qualibooth.com` | Override for staging or self-hosted deployments |
+| `QUALIBOOTH_ORG_UUID` | ✅ | — | Your QualiBooth organization UUID. Found in QualiBooth → Settings → Organization. |
+| `QUALIBOOTH_REPO` | ✅ | — | Repository identifier in `owner/repo` format (e.g. `myorg/myproject`). |
+| `QUALIBOOTH_SHA` | ✅ | — | Full 40-character commit SHA for the scanned revision. |
+| `QUALIBOOTH_BRANCH` | — | `main` | Branch or tag name associated with this scan. |
+| `QUALIBOOTH_PR_HEAD` | — | — | Source branch name for pull request events (takes precedence over `QUALIBOOTH_BRANCH`). |
+| `QUALIBOOTH_PROJECT_TYPE` | — | `react` | Project type: `react`, `vue`, or `html`. Determines which ESLint accessibility plugin is used. |
+| `QUALIBOOTH_SCAN_PATHS` | — | `src/` | Comma-separated list of directories or file paths to scan, relative to the workspace root. |
+| `QUALIBOOTH_FAIL_ON_ISSUES` | — | `false` | Set to `true` to exit with code 1 when accessibility issues are found, failing the CI job. |
+| `QUALIBOOTH_API_URL` | — | `https://pipelinein.qualibooth.com` | Override the QualiBooth API endpoint (useful for staging or self-hosted deployments). |
+| `QUALIBOOTH_WORKSPACE` | — | `.` | Absolute path to the repository root inside the container. Use when mounting code via `-v`. |
+| `QUALIBOOTH_OUTPUT` | — | `/tmp/qualibooth-output` | File path for writing structured output (e.g., issue count). Useful for downstream CI steps. |
 
-## Outputs
+### Output Variables
 
-| Output | Description |
+After the scan completes, the following is written to the file specified by `QUALIBOOTH_OUTPUT`:
+
+| Key | Description |
 |---|---|
-| `issues-found` | Number of accessibility issues found (as a string) |
+| `ISSUES_FOUND` | Number of accessibility issues found (integer as string) |
+
+---
+
+## Advanced Usage
+
+### Vue project with custom scan paths
+
+```yaml
+- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+  env:
+    QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
+    QUALIBOOTH_REPO: ${{ github.repository }}
+    QUALIBOOTH_SHA: ${{ github.sha }}
+    QUALIBOOTH_BRANCH: ${{ github.ref_name }}
+    QUALIBOOTH_PROJECT_TYPE: vue
+    QUALIBOOTH_SCAN_PATHS: "src/components, src/views, src/layouts"
+```
+
+### Fail the build on issues
+
+```yaml
+- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+  env:
+    QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
+    QUALIBOOTH_REPO: ${{ github.repository }}
+    QUALIBOOTH_SHA: ${{ github.sha }}
+    QUALIBOOTH_BRANCH: ${{ github.ref_name }}
+    QUALIBOOTH_FAIL_ON_ISSUES: "true"
+```
+
+### Use the issue count in a later step (GitHub Actions)
+
+```yaml
+- name: Run QualiBooth Scan
+  id: qualibooth
+  uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+  env:
+    QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
+    QUALIBOOTH_REPO: ${{ github.repository }}
+    QUALIBOOTH_SHA: ${{ github.sha }}
+    QUALIBOOTH_BRANCH: ${{ github.ref_name }}
+
+- name: Check results
+  if: steps.qualibooth.outputs.ISSUES_FOUND != '0'
+  run: echo "Found ${{ steps.qualibooth.outputs.ISSUES_FOUND }} accessibility issues. Check QualiBooth for details."
+```
+
+### Point at a staging API
+
+```yaml
+- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+  env:
+    QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
+    QUALIBOOTH_REPO: ${{ github.repository }}
+    QUALIBOOTH_SHA: ${{ github.sha }}
+    QUALIBOOTH_BRANCH: ${{ github.ref_name }}
+    QUALIBOOTH_API_URL: https://pipelinein.staging.qualibooth.com
+```
 
 ---
 
 ## Project Types
 
-### React (`project-type: react`)
+### React (`QUALIBOOTH_PROJECT_TYPE=react`)
 
 Uses [`eslint-plugin-jsx-a11y`](https://github.com/jsx-eslint/eslint-plugin-jsx-a11y) with the `recommended` ruleset.
 
@@ -78,7 +228,7 @@ Scans: `.js` `.jsx` `.ts` `.tsx`
 
 Example rules: `jsx-a11y/alt-text`, `jsx-a11y/anchor-is-valid`, `jsx-a11y/label-has-associated-control`
 
-### Vue (`project-type: vue`)
+### Vue (`QUALIBOOTH_PROJECT_TYPE=vue`)
 
 Uses [`eslint-plugin-vuejs-accessibility`](https://github.com/vue-a11y/eslint-plugin-vuejs-accessibility) with the `recommended` ruleset.
 
@@ -86,7 +236,7 @@ Scans: `.vue` `.js`
 
 Example rules: `vuejs-accessibility/alt-text`, `vuejs-accessibility/anchor-is-valid`
 
-### HTML (`project-type: html`)
+### HTML (`QUALIBOOTH_PROJECT_TYPE=html`)
 
 Uses [`eslint-plugin-html`](https://github.com/BenoitZugmeyer/eslint-plugin-html) to extract inline scripts from HTML files, then applies `eslint-plugin-jsx-a11y` rules.
 
@@ -94,88 +244,55 @@ Scans: `.html` `.htm` `.js`
 
 ---
 
-## Advanced Usage
-
-### Vue project
-
-```yaml
-- uses: qualibooth/QualiBooth-Action@v1
-  with:
-    org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-    project-type: vue
-    scan-paths: "src/components, src/views, src/layouts"
-```
-
-### Fail the build on issues
-
-```yaml
-- uses: qualibooth/QualiBooth-Action@v1
-  with:
-    org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-    fail-on-issues: true
-```
-
-### Use the `issues-found` output in a later step
-
-```yaml
-- uses: qualibooth/QualiBooth-Action@v1
-  id: qualibooth
-  with:
-    org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-
-- name: Comment on PR
-  if: steps.qualibooth.outputs.issues-found != '0'
-  run: echo "Found ${{ steps.qualibooth.outputs.issues-found }} accessibility issues. Check QualiBooth for details."
-```
-
-### Point at a staging API
-
-```yaml
-- uses: qualibooth/QualiBooth-Action@v1
-  with:
-    org-uuid: ${{ secrets.QUALIBOOTH_ORG_UUID }}
-    api-url: https://pipelinein.staging.qualibooth.com
-```
-
----
-
 ## How It Works
 
-1. `actions/checkout` checks out your repository to `GITHUB_WORKSPACE`
-2. The action runs ESLint with the appropriate accessibility plugin for your `project-type`
-3. Only accessibility rule violations are collected (rules prefixed `jsx-a11y/` or `vuejs-accessibility/`) — no other ESLint rules are applied or reported
-4. Results are POSTed to `/metrics-sca/vertices/in` with the org UUID in the `authorization` header and repo, branch, commit SHA, and the full issue list in the body
-5. Your QualiBooth dashboard shows the new scan run immediately
+1. The Docker image runs ESLint with the appropriate accessibility plugin for your `project-type`
+2. Only accessibility rule violations are collected (rules prefixed `jsx-a11y/` or `vuejs-accessibility/`) — no other ESLint rules are applied or reported
+3. Results are POSTed to `/metrics-sca/vertices/in` with the org UUID in the `authorization` header and repo, branch, commit SHA, and the full issue list in the body
+4. Your QualiBooth dashboard shows the new scan run immediately
 
 ---
 
-## Releases and `dist/`
+## Building the Docker Image Locally
 
-This action bundles all dependencies into `dist/index.js` using [`@vercel/ncc`](https://github.com/vercel/ncc). The `dist/` directory **must be committed** on release tags so GitHub Actions can run the action without installing `node_modules`.
+```bash
+docker build -f .docker/Dockerfile -t qualibooth-action:local .
+```
 
-To build after making source changes:
+After making source changes, rebuild `dist/` first:
 
 ```bash
 npm install
 npm run build
-git add dist/
-git commit -m "chore: rebuild dist"
+```
+
+Then tag and push to GHCR (requires `packages: write` permission):
+
+```bash
 git tag v1.x.x
 git push --follow-tags
 ```
+
+The `.github/workflows/docker-publish.yml` workflow publishes automatically on `v*` tags.
 
 ---
 
 ## Troubleshooting
 
 **HTTP 401 — Unauthorized**
-Your `QUALIBOOTH_ORG_UUID` secret is missing or incorrect. Copy it exactly from QualiBooth → Settings → Organization.
+Your `QUALIBOOTH_ORG_UUID` is missing or incorrect. Copy it exactly from QualiBooth → Settings → Organization.
 
 **HTTP 422 — Unprocessable Entity**
-The `org-uuid` value is not a valid UUID. Copy it exactly from QualiBooth → Settings → Organization.
+The org UUID value is not a valid UUID. Copy it exactly from QualiBooth → Settings → Organization.
 
 **No issues found / zero results**
-Check that `scan-paths` points to a directory that exists in your repository and contains the right file types for your `project-type`. Paths are relative to the repository root.
+Check that `QUALIBOOTH_SCAN_PATHS` points to a directory that exists in your workspace and contains the right file types for your `project-type`. Paths are relative to the repository root.
 
-**Plugin or parse errors in the action log**
-Make sure `project-type` matches your actual framework. Using `react` for a Vue project will result in parse errors on `.vue` files.
+**Plugin or parse errors in the log**
+Make sure `QUALIBOOTH_PROJECT_TYPE` matches your actual framework. Using `react` for a Vue project will result in parse errors on `.vue` files.
+
+**Missing required environment variable error**
+The entrypoint requires `QUALIBOOTH_ORG_UUID`, `QUALIBOOTH_REPO`, and `QUALIBOOTH_SHA`. On non-GitHub CIs, map them from your CI's built-in variables (e.g., `$CI_PROJECT_PATH`, `$CI_COMMIT_SHA`). See the examples above for each platform.
+
+**Wrong results branch or repo name**
+Ensure `QUALIBOOTH_REPO` is in `owner/repo` format. For pull requests, set `QUALIBOOTH_PR_HEAD` to the source branch — it takes precedence over `QUALIBOOTH_BRANCH`.
