@@ -7,4 +7,4 @@ mkdir -p "$(dirname "$QUALIBOOTH_OUTPUT")"
 touch "$QUALIBOOTH_OUTPUT"
 
 # --- Run the action ---
-exec node dist/index.js
+exec node /app/dist/index.js
