@@ -1,46 +1,57 @@
 'use strict'
 
-const core = require('@actions/core')
-const github = require('@actions/github')
+const fs = require('fs')
 const path = require('path')
 const { runEslint } = require('./eslint-runner')
 const { postScanResults } = require('./api-client')
 
+function getInput(name) {
+  const envKey = 'INPUT_' + name.toUpperCase().replace(/-/g, '_')
+  return process.env[envKey] || ''
+}
+
+function setOutput(name, value) {
+  const outputPath = process.env.GITHUB_OUTPUT
+  if (outputPath) {
+    fs.appendFileSync(outputPath, `${name}=${value}\n`)
+  } else {
+    console.log(`${name}=${value}`)
+  }
+}
+
 async function run() {
   try {
-    const orgUuid      = core.getInput('org-uuid', { required: true })
-    const projectType  = core.getInput('project-type') || 'react'
-    const scanPathsRaw = core.getInput('scan-paths') || 'src/'
-    const failOnIssues = core.getInput('fail-on-issues') === 'true'
-    const apiUrl       = core.getInput('api-url') || 'https://pipelinein.qualibooth.com'
+    const orgUuid      = getInput('org-uuid') || process.env.QUALIBOOTH_ORG_UUID
+    if (!orgUuid) throw new Error('INPUT_ORG_UUID is required (set QUALIBOOTH_ORG_UUID for non-GitHub CIs)')
 
-    // GITHUB_HEAD_REF is set on pull_request events (the source branch name)
-    // GITHUB_REF_NAME is set on push events
+    const projectType  = getInput('project-type') || 'react'
+    const scanPathsRaw = getInput('scan-paths') || 'src/'
+    const failOnIssues = getInput('fail-on-issues') === 'true'
+    const apiUrl       = getInput('api-url') || 'https://pipelinein.qualibooth.com'
+
     const rawRepo   = process.env.GITHUB_REPOSITORY || ''
     const repo      = rawRepo.split('/')[1] || rawRepo
-    const branch    = process.env.GITHUB_HEAD_REF
-                   || process.env.GITHUB_REF_NAME
-                   || github.context.ref.replace('refs/heads/', '')
-    const fullSha   = process.env.GITHUB_SHA || github.context.sha || ''
+    const branch    = process.env.GITHUB_HEAD_REF || process.env.GITHUB_REF_NAME || ''
+    const fullSha   = process.env.GITHUB_SHA || ''
     const commitSha = fullSha.slice(0, 7)
     const repoRoot  = process.env.GITHUB_WORKSPACE || path.resolve('.')
+
+    console.log(`QualiBooth: project-type=${projectType}`)
+    console.log(`Repo: ${repo} | Branch: ${branch} | Commit: ${commitSha}`)
+    console.log(`Scanning paths: ${scanPathsRaw.split(',').map(p => p.trim()).filter(Boolean).join(', ')}`)
 
     const scanPaths = scanPathsRaw
       .split(',')
       .map(p => p.trim())
       .filter(Boolean)
 
-    core.info(`QualiBooth: project-type=${projectType}`)
-    core.info(`Repo: ${repo} | Branch: ${branch} | Commit: ${commitSha}`)
-    core.info(`Scanning paths: ${scanPaths.join(', ')}`)
-
-    core.info('Running ESLint accessibility analysis...')
+    console.log('Running ESLint accessibility analysis...')
     const issues = await runEslint(projectType, scanPaths, repoRoot)
-    core.info(`Found ${issues.length} accessibility issue(s)`)
+    console.log(`Found ${issues.length} accessibility issue(s)`)
 
-    core.setOutput('issues-found', String(issues.length))
+    setOutput('issues-found', String(issues.length))
 
-    core.info('Posting results to QualiBooth API...')
+    console.log('Posting results to QualiBooth API...')
     const response = await postScanResults({
       apiUrl,
       orgUuid,
@@ -49,16 +60,18 @@ async function run() {
       commitSha,
       issues,
     })
-    core.info(`Results accepted. Run ID: ${response.runUuid || 'n/a'} | Accepted: ${response.accepted ?? issues.length}`)
+    console.log(`Results accepted. Run ID: ${response.runUuid || 'n/a'} | Accepted: ${response.accepted ?? issues.length}`)
 
     if (failOnIssues && issues.length > 0) {
-      core.setFailed(
+      console.error(
         `Found ${issues.length} accessibility issue(s). Set fail-on-issues: false to allow the build to pass.`
       )
+      process.exit(1)
     }
 
   } catch (error) {
-    core.setFailed(`QualiBooth Action failed: ${error.message}`)
+    console.error(`QualiBooth Action failed: ${error.message}`)
+    process.exit(1)
   }
 }
 
