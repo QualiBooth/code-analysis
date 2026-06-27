@@ -36,7 +36,7 @@ jobs:
 
     steps:
       - name: Run QualiBooth Code Analysis
-        uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+        uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.4
         env:
           QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
           QUALIBOOTH_REPO: ${{ github.repository }}
@@ -53,7 +53,7 @@ Results appear in your QualiBooth dashboard after each push.
 Published to GHCR as a portable image:
 
 ```bash
-ghcr.io/qualibooth/qualibooth-action:v1.0.3
+ghcr.io/qualibooth/qualibooth-action:v1.0.4
 ```
 
 ### GitHub Actions — `docker run` (Full Control)
@@ -68,14 +68,14 @@ ghcr.io/qualibooth/qualibooth-action:v1.0.3
       -e QUALIBOOTH_SHA="${{ github.sha }}" \
       -e QUALIBOOTH_BRANCH="${{ github.ref_name }}" \
       -e QUALIBOOTH_PROJECT_TYPE=react \
-      ghcr.io/qualibooth/qualibooth-action:v1.0.3
+      ghcr.io/qualibooth/qualibooth-action:v1.0.4
 ```
 
 ### GitLab CI — Native Image
 
 ```yaml
 qualibooth-scan:
-  image: ghcr.io/qualibooth/qualibooth-action:v1.0.3
+  image: ghcr.io/qualibooth/qualibooth-action:v1.0.4
   variables:
     QUALIBOOTH_ORG_UUID: $QUALIBOOTH_ORG_UUID
     QUALIBOOTH_REPO: "$CI_PROJECT_PATH"
@@ -101,7 +101,7 @@ qualibooth-scan:
         -e QUALIBOOTH_REPO="$CI_PROJECT_PATH" \
         -e QUALIBOOTH_SHA="$CI_COMMIT_SHA" \
         -e QUALIBOOTH_BRANCH="$CI_COMMIT_BRANCH" \
-        ghcr.io/qualibooth/qualibooth-action:v1.0.3
+        ghcr.io/qualibooth/qualibooth-action:v1.0.4
 ```
 
 ### Jenkins (Jenkinsfile)
@@ -113,7 +113,7 @@ pipeline {
         stage('Accessibility Scan') {
             steps {
                 script {
-                    def image = 'ghcr.io/qualibooth/qualibooth-action:v1.0.3'
+                    def image = 'ghcr.io/qualibooth/qualibooth-action:v1.0.4'
                     sh """
                       docker run --rm \\
                         -v \${WORKSPACE}:/workspace \\
@@ -165,7 +165,7 @@ After the scan completes, the following is written to the file specified by `QUA
 ### Vue project with custom scan paths
 
 ```yaml
-- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.4
   env:
     QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
     QUALIBOOTH_REPO: ${{ github.repository }}
@@ -178,7 +178,7 @@ After the scan completes, the following is written to the file specified by `QUA
 ### Fail the build on issues
 
 ```yaml
-- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.4
   env:
     QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
     QUALIBOOTH_REPO: ${{ github.repository }}
@@ -192,7 +192,7 @@ After the scan completes, the following is written to the file specified by `QUA
 ```yaml
 - name: Run QualiBooth Scan
   id: qualibooth
-  uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+  uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.4
   env:
     QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
     QUALIBOOTH_REPO: ${{ github.repository }}
@@ -207,7 +207,7 @@ After the scan completes, the following is written to the file specified by `QUA
 ### Point at a staging API
 
 ```yaml
-- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.3
+- uses: docker://ghcr.io/qualibooth/qualibooth-action:v1.0.4
   env:
     QUALIBOOTH_ORG_UUID: ${{ secrets.QUALIBOOTH_ORG_UUID }}
     QUALIBOOTH_REPO: ${{ github.repository }}
