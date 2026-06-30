@@ -24,16 +24,16 @@ async function run() {
     if (!orgUuid) throw new Error('QUALIBOOTH_ORG_UUID is required')
 
     const projectType  = getEnv('PROJECT_TYPE') || 'react'
-    const scanPathsRaw = getEnv('SCAN_PATHS') || 'src/'
+    const scanPathsRaw = getEnv('SCAN_PATHS') || '.'
     const failOnIssues = getEnv('FAIL_ON_ISSUES') === 'true'
-    const apiUrl       = getEnv('API_URL') || 'https://pipelinein.qualibooth.com'
+    const apiUrl       = getEnv('API_URL') || 'https://pipelinein.prod.qualibooth.com'
 
     const rawRepo   = getEnv('REPO') || ''
     const repo      = rawRepo.split('/')[1] || rawRepo
     const branch    = getEnv('PR_HEAD') || getEnv('BRANCH') || ''
     const fullSha   = getEnv('SHA') || ''
     const commitSha = fullSha.slice(0, 7)
-    const repoRoot  = getEnv('WORKSPACE') || path.resolve('.')
+    const repoRoot  = process.env.GITHUB_WORKSPACE || path.resolve('.')
 
     console.log(`QualiBooth: project-type=${projectType}`)
     console.log(`Repo: ${repo} | Branch: ${branch} | Commit: ${commitSha}`)

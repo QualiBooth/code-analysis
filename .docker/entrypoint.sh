@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # --- Wire QUALIBOOTH_OUTPUT so setOutput works inside the container ---
-: "${QUALIBOOTH_OUTPUT:=/tmp/qualibooth-output}"
+: "${QUALIBOOTH_OUTPUT:=/tmp/qualibooth-output.txt}"
 mkdir -p "$(dirname "$QUALIBOOTH_OUTPUT")"
 touch "$QUALIBOOTH_OUTPUT"
 
