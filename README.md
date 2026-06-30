@@ -86,6 +86,8 @@ qualibooth-scan:
     QUALIBOOTH_REPO: "$CI_PROJECT_PATH"
     QUALIBOOTH_SHA: "$CI_COMMIT_SHA"
     QUALIBOOTH_BRANCH: "$CI_COMMIT_BRANCH"
+  script:
+    - /entrypoint.sh
 ```
 
 ### GitLab CI — With `docker run`
